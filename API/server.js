@@ -5,7 +5,7 @@ const login = require('./routers/login')
 const cadastroUser = require('./routers/cadastro')
 const cadastroGestor = require('./routers/criarGestor')
 const usuarios = require('./routers/usuarios')
-
+const email =require('./routers/email')
 
 const  app = express()
 
@@ -18,6 +18,7 @@ app.use('/login', login)
 app.use('/cadastro-user', cadastroUser)
 app.use('/cadastro-gestor', cadastroGestor)
 app.use('/', usuarios)
+app.use('/', email)
 
 async function verificarConexao() {
     try {
