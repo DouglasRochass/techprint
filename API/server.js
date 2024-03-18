@@ -5,7 +5,7 @@ const login = require('./routers/login')
 const cadastroUser = require('./routers/cadastro')
 const cadastroGestor = require('./routers/criarGestor')
 const usuarios = require('./routers/usuarios')
-const email =require('./routers/email')
+const email = require('./routers/email')
 
 const  app = express()
 
