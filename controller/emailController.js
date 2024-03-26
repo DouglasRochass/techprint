@@ -6,6 +6,9 @@ const jwt = require('jsonwebtoken');
 const moment = require('moment');
 require('dotenv').config();
 
+
+
+
 const SENDER_EMAIL = "sla265827@gmail.com";
 const JWT_SECRET = process.env.TOKEN;
 
@@ -46,6 +49,43 @@ async function enviarEmailRecuperacaoSenha(req, res) {
     }
 }
 
+async function redefinirSenha(req, res) {
+    const token = req.headers.authorization.replace("Bearer ", "");
+    const novaSenha = req.body.novaSenha;
+
+    try {
+        // Verificar se o token é válido
+        const decoded = jwt.verify(token, JWT_SECRET);
+        
+        // Verificar se o usuário é um usuário comum
+        let usuario = await Usuario.findOne({ email: decoded.email });
+
+        if (!usuario) {
+            // Se não for um usuário comum, verificar se é um gestor
+            usuario = await Gestor.findOne({ email: decoded.email });
+        }
+
+        if (usuario) {
+            // Atualizar a senha do usuário na tabela apropriada
+            if (usuario instanceof Usuario) {
+                await await Usuario.update({ senha: novaSenha }, { where: { email: decoded.email } });
+            } else if (usuario instanceof Gestor) {
+                await await Gestor.update({ senha: novaSenha }, { where: { email: decoded.email } });
+            }
+
+            // Enviar resposta de sucesso
+            res.send("Senha redefinida com sucesso.");
+        } else {
+            // Se nenhum usuário for encontrado, enviar uma resposta de erro
+            res.status(404).send("Usuário não encontrado.");
+        }
+    } catch (error) {
+        console.error("Erro ao redefinir senha:", error);
+        res.status(500).send("Ocorreu um erro ao redefinir a senha.");
+    }
+}
+
 module.exports = {
-    enviarEmailRecuperacaoSenha // Certifique-se de exportar a função corretamente
+    enviarEmailRecuperacaoSenha, // Certifique-se de exportar a função corretamente
+    redefinirSenha
 };

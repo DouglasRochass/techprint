@@ -1,54 +1,50 @@
-const Usuario = require('../models/usuarios'); // Importe o modelo de usuário
+// newPasswordController.js
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const Usuario = require('../models/usuarios');
+const Gestor = require('../models/gestor');
+require('dotenv').config();
 
+const JWT_SECRET = process.env.TOKEN;
 
-exports.findByEmail = async (req, res) => {
-    try {
-      const { email } = req.params;
-  
-      const usuarios = await Usuario.findAll({
-        where: { email }
-      });
-  
-      res.status(200).json(usuarios);
-    } catch (error) {
-      console.error('Erro ao buscar usuário por email:', error);
-      res.status(500).json({ message: "Erro ao buscar usuários por email" });
+async function atualizarSenha(req, res) {
+    const token = req.query.token; // Obtendo o token do parâmetro da consulta
+
+    if (!token) {
+        return res.status(400).send("Token não fornecido.");
     }
-  };
-  
-  exports.attuser = async (req, res) => {
+
+    const { novaSenha } = req.body;
+
     try {
-      const idUsuario = req.params.id;
-      const { nome, email, senha, cargo, turma} = req.body;
-  
-      const updatedUser = await Usuario.update({
-        nome,
-         email,
-          senha,
-          cargo,
-          turma
-      }, {
-        where: { id: idUsuario }
-      });
-  
-      res.status(200).json({ message: "usuário atualizado com sucesso" });
+        // Verificar se o token é válido
+        const decoded = jwt.verify(token, JWT_SECRET);
+
+        // Verificar se o usuário existe com base no e-mail do token
+        const usuario = await Usuario.findOne({ where: { email: decoded.email } });
+        const gestor = await Gestor.findOne({ where: { email: decoded.email } });
+
+        if (usuario || gestor) {
+            // Hash da nova senha
+            const hashedSenha = await bcrypt.hash(novaSenha, 10);
+
+            // Atualizar a senha do usuário/gestor
+            if (usuario) {
+                await Usuario.update({ senha: hashedSenha }, { where: { email: decoded.email } });
+            } else {
+                await Gestor.update({ senha: hashedSenha }, { where: { email: decoded.email } });
+            }
+
+            res.send("Senha atualizada com sucesso.");
+        } else {
+            res.status(404).send("Usuário não encontrado.");
+        }
     } catch (error) {
-      console.error('Erro ao atualizar usuário:', error);
-      res.status(500).json({ message: "Erro ao atualizar usuário" });
+        console.error("Erro ao atualizar senha:", error);
+        res.status(500).send("Ocorreu um erro ao atualizar a senha.");
     }
-  };
-  
-  exports.deleteUser = async (req, res) => {
-    try {
-      const idUsuario = req.params.id;
-  
-      await Usuario.delete({
-        where: { id: idUsuario }
-      });
-  
-      res.status(200).json({ message: "Usuário deletado com sucesso" });
-    } catch (error) {
-      console.error('Erro ao deletar Usuário:', error);
-      res.status(500).json({ message: "Erro ao deletar Usuário" });
-    }
-  };
+}
+
+module.exports = {
+    atualizarSenha
+};

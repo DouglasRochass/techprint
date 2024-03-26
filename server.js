@@ -2,9 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const sequelize = require('./db/conexao')
 const login = require('./routers/login')
-const cadastroUser = require('./routers/cadastro')
-const cadastroGestor = require('./routers/criarGestor')
-const usuarios = require('./routers/usuarios')
+const cadastro = require('./routers/cadastro')
 const email = require('./routers/email')
 
 const  app = express()
@@ -15,9 +13,7 @@ app.use(express.json())
 
 
 app.use('/login', login)
-app.use('/cadastro-user', cadastroUser)
-app.use('/cadastro-gestor', cadastroGestor)
-app.use('/', usuarios)
+app.use('/', cadastro)
 app.use('/', email)
 
 async function verificarConexao() {
