@@ -4,6 +4,9 @@ const sequelize = require('./db/conexao')
 const login = require('./routers/login')
 const cadastro = require('./routers/cadastro')
 const email = require('./routers/email')
+const materiais = require('./routers/material')
+
+
 
 const  app = express()
 
@@ -15,6 +18,10 @@ app.use(express.json())
 app.use('/login', login)
 app.use('/', cadastro)
 app.use('/', email)
+app.use('/', materiais)
+
+
+
 
 async function verificarConexao() {
     try {

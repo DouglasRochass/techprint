@@ -8,7 +8,6 @@ require('dotenv').config();
 
 
 
-
 const SENDER_EMAIL = "sla265827@gmail.com";
 const JWT_SECRET = process.env.TOKEN;
 
