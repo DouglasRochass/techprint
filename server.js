@@ -5,7 +5,7 @@ const login = require('./routers/login')
 const cadastro = require('./routers/cadastro')
 const email = require('./routers/email')
 const materiais = require('./routers/material')
-
+const usuarios = require('./routers/usuarios')
 
 
 const  app = express()
@@ -19,7 +19,7 @@ app.use('/login', login)
 app.use('/', cadastro)
 app.use('/', email)
 app.use('/', materiais)
-
+app.use('/', usuarios)
 
 
 
