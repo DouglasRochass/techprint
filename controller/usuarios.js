@@ -1,8 +1,5 @@
-// newPasswordController.js
-
 const Usuario = require('../models/usuarios');
 const Gestor = require('../models/gestor');
-const { where } = require('sequelize');
 
 exports.getAllUsers = async (req, res) => {
   try {
@@ -19,24 +16,29 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-exports.deleteUser = async (req, res) =>{
-  const {email} = req.params
-  try{
-    const user = await Usuario.findOne({where: {email} })
-    const gestor = await Gestor.findOne({where: {email} })
+exports.deleteUser = async (req, res) => {
+  const { email } = req.params;
 
-    if(user){
-      await Usuario.destroy({where: {email}})
-      return res.json({message: 'Usuário excluído com sucesso'})
-    }else if(gestor){
-      await Gestor.destroy({where: {email}})
-      return res.json({message: 'Gestor excluído com sucesso'})
-    }else{
-      return res.status(404).json({message: 'Usuário não encontrado'})
+  try {
+    // Procura pelo e-mail nos modelos de Usuário e Gestor
+    const usuario = await Usuario.findOne({ where: { email } });
+    const gestor = await Gestor.findOne({ where: { email } });
+
+    // Verifica se o usuário foi encontrado em algum dos modelos
+    if (!usuario && !gestor) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
     }
-  } catch(error){
-    console.error('Error ao excluir usuário:', error)
-    res.status(500).json({error: 'Erro interno do servidor'})
-  }
 
-}
+    // Exclui o usuário encontrado
+    if (usuario) {
+      await usuario.destroy();
+    } else {
+      await gestor.destroy();
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ error: 'Erro interno do servidor ao excluir usuário' });
+  }
+};
