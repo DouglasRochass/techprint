@@ -3,7 +3,7 @@ const router = express.Router()
 const authGestor = require('../middleware/auth')
 const Maquina = require('../controller/maquina')
 
-router.post('/maquinas', Maquina.criarMaquina)
+router.post('/maquinas', authGestor, Maquina.criarMaquina)
 router.get('/maquinas', Maquina.getAllMaquinas)
 router.delete('/maquinas/:id', authGestor, Maquina.deleteMaquina) 
 

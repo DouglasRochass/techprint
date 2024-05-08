@@ -7,13 +7,10 @@ const email = require('./routers/email')
 const materiais = require('./routers/material')
 const usuarios = require('./routers/usuarios')
 const maquina = require('./routers/maquina')
-
+const pedidos = require('./routers/pedidos')
 
 const  app = express()
-app.use((req,res, next) =>{
-    res.header('Acess-Control-Allow-Origin','*')
-    next()
-})
+
 app.use(cors());
 app.use(express.json())
 
@@ -25,7 +22,7 @@ app.use('/', email)
 app.use('/', materiais)
 app.use('/', usuarios)
 app.use('/', maquina)
-
+app.use('/', pedidos)
 
 async function verificarConexao() {
     try {
