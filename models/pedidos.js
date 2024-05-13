@@ -2,6 +2,10 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../db/conexao');
 
 const pedidos = sequelize.define('pedidos', {
+  nome_pedido: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
   data: {
     type: DataTypes.DATE,
     allowNull: false
