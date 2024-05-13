@@ -7,7 +7,7 @@ const pedidos = sequelize.define('pedidos', {
     allowNull: false
   },
   data: {
-    type: DataTypes.DATE,
+    type: DataTypes.STRING,
     allowNull: false
   },
   descri: {
@@ -15,10 +15,6 @@ const pedidos = sequelize.define('pedidos', {
     allowNull: false
   },
   tempo_impre: {
-    type: DataTypes.TIME,
-    allowNull: false
-  },
-  impre_usando: {
     type: DataTypes.STRING,
     allowNull: false
   },
