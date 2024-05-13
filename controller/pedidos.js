@@ -13,6 +13,7 @@ async function criarPedido(req, res) {
   
       // Criar o pedido associando o ID do usuário
       const novoPedido = await Pedido.create({
+        nome_pedido: req.body.nome_pedido,
         data: req.body.data,
         descri: req.body.descri,
         tempo_impre: req.body.tempo_impre,
