@@ -12,7 +12,7 @@ const pedidos = require('./routers/pedidos')
 const  app = express()
 
 
-app.use(cors();
+app.use(cors());
 app.use(express.json());
 
 
