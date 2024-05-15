@@ -5,20 +5,29 @@ const multer = require('multer');
 const Gestor  = require('../models/gestor');
 const Usuario = require('../models/usuarios')
 
-const upload = multer();
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Define o diretório de destino dos uploads
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9); // Adiciona um sufixo único ao nome do arquivo
+    cb(null, uniqueSuffix + path.extname(file.originalname)); // Usa o nome original do arquivo com sufixo único
+  }
+});
+const upload = multer({ storage: storage });
 
 async function enviarEmailComAnexo(destinatarios, assunto, corpo, anexo) {
   try {
     for (const destinatario of destinatarios) {
       const mailOptions = {
-        from: 'sla265827@gmail.com', // Endereço de e-mail do remetente
+        from: 'sla265827@gmail.com',
         to: destinatario,
         subject: assunto,
         text: corpo,
         attachments: [
           {
-            filename: anexo ? anexo.originalname : '', // Use o nome original do arquivo, se disponível
-            content: anexo ? anexo.buffer : '', // Use o conteúdo do buffer do arquivo, se disponível
+            filename: anexo ? anexo.originalname : '',
+            content: anexo ? anexo.buffer : '',
           }
         ]
       };
@@ -39,14 +48,21 @@ async function criarPedido(req, res) {
     const usuario = await Usuario.findByPk(usuarioId);
     const nome = usuario.nome;
     
+    // Processar o envio de arquivos em memória
     upload.single('arquivo')(req, res, async function (err) {
       if (err) {
         return res.status(400).json({ message: 'Erro ao enviar o arquivo', error: err.message });
       }
 
+      if (!req.file) {
+        return res.status(400).json({ message: 'Arquivo não enviado.' });
+      }
+
+      // Recuperar todos os e-mails dos gestores
       const gestores = await Gestor.findAll();
       const destinatarios = gestores.map(gestor => gestor.email);
 
+      // Montar o corpo do e-mail
       const corpoEmail = `${nome} fez um agendamento.\n\n` +
                          `Nome do pedido: ${req.body.nome_pedido}\n` +
                          `Data: ${req.body.data}\n` +
