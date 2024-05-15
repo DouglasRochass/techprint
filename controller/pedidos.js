@@ -1,171 +1,90 @@
-const Pedido = require('../models/pedidos');
-const jwt = require('jsonwebtoken')
+// emailController.js
 const nodemailerTransporter = require('../config/mailerconfig');
-const multer = require('multer');
-const Gestor  = require('../models/gestor');
-const Usuario = require('../models/usuarios')
+const Usuario = require('../models/usuarios');
+const Gestor = require('../models/gestor');
+const jwt = require('jsonwebtoken');
+const moment = require('moment');
+require('dotenv').config();
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Define o diretório de destino dos uploads
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9); // Adiciona um sufixo único ao nome do arquivo
-    cb(null, uniqueSuffix + path.extname(file.originalname)); // Usa o nome original do arquivo com sufixo único
-  }
-});
-const upload = multer({ storage: storage });
 
-async function enviarEmailComAnexo(destinatarios, assunto, corpo, anexo) {
-  try {
-    for (const destinatario of destinatarios) {
-      const mailOptions = {
-        from: 'sla265827@gmail.com',
-        to: destinatario,
-        subject: assunto,
-        text: corpo,
-        attachments: [
-          {
-            filename: anexo ? anexo.originalname : '',
-            content: anexo ? anexo.buffer : '',
-          }
-        ]
-      };
 
-      const info = await nodemailerTransporter.sendMail(mailOptions);
-      console.log('E-mail enviado para', destinatario, ':', info.messageId);
-    }
-  } catch (error) {
-    console.error('Erro ao enviar o e-mail:', error);
-  }
-}
+const SENDER_EMAIL = "sla265827@gmail.com";
+const JWT_SECRET = process.env.TOKEN;
 
-async function criarPedido(req, res) {
-  try {
-    const token = req.headers.authorization.split(' ')[1];
-    const decodedToken = jwt.verify(token, process.env.TOKEN);
-    const usuarioId = decodedToken.userId;
-    const usuario = await Usuario.findByPk(usuarioId);
-    const nome = usuario.nome;
-    
-    // Processar o envio de arquivos em memória
-    upload.single('arquivo')(req, res, async function (err) {
-      if (err) {
-        return res.status(400).json({ message: 'Erro ao enviar o arquivo', error: err.message });
-      }
+async function enviarEmailRecuperacaoSenha(req, res) {
+    const email = req.body.email;
 
-      if (!req.file) {
-        return res.status(400).json({ message: 'Arquivo não enviado.' });
-      }
-
-      // Recuperar todos os e-mails dos gestores
-      const gestores = await Gestor.findAll();
-      const destinatarios = gestores.map(gestor => gestor.email);
-
-      // Montar o corpo do e-mail
-      const corpoEmail = `${nome} fez um agendamento.\n\n` +
-                         `Nome do pedido: ${req.body.nome_pedido}\n` +
-                         `Data: ${req.body.data}\n` +
-                         `Descrição: ${req.body.descri}\n` +
-                         `Arquivo do pedido: ${req.file.originalname}`;
-
-      // Enviar o e-mail para todos os gestores com o anexo
-      await enviarEmailComAnexo(destinatarios, 'Novo Agendamento', corpoEmail, req.file);
-
-      const novoPedido = await Pedido.create({
-        nome_pedido: req.body.nome_pedido,
-        data: req.body.data,
-        descri: req.body.descri,
-        tempo_impre: req.body.tempo_impre,
-        user_id: usuarioId
-      });
-      res.status(200).json({ message: 'E-mails enviados com sucesso para todos os gestores.' });
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Erro ao criar o pedido', error: error.message });
-  }
-}
-
-async function listarPedidos(req, res) {
     try {
-        // Extrair o token JWT do cabeçalho da solicitação
-        const token = req.headers.authorization.split(' ')[1];
-        
-        // Decodificar o token JWT para obter o ID do usuário
-        const decodedToken = jwt.verify(token, process.env.TOKEN);
-        const usuarioId = decodedToken.userId; // Supondo que o ID do usuário está armazenado em userId no token
-    
-        // Buscar os pedidos associados ao ID do usuário
-        const pedidosDoUsuario = await Pedido.findAll({
-          where: {
-            user_id: usuarioId
-          }
-        });
-    
-        res.status(200).json(pedidosDoUsuario);
-      } catch (error) {
-        res.status(500).json({ message: 'Erro ao listar os pedidos do usuário', error: error.message });
-      }
-    }
-    
-async function excluirPedido(req, res) {
-    try {
-        const pedido = req.params.id;
-        await Pedido.destroy({ where: { id: pedido } });
-        res.status(200).json({ message: "Pedido deletado com sucesso" });
-    } catch (error) {
-        console.error('Erro ao deletar pedido:', error);
-        res.status(500).json({ message: "Erro ao deletar pedido" });
-    }
-}
+        const usuario = await Usuario.findOne({ where: { email } });
+        const gestor = await Gestor.findOne({ where: { email } });
 
-async function excluirMeuPedido(req, res) {
-    try {
-      // Extrair o token JWT do cabeçalho da solicitação
-      const token = req.headers.authorization.split(' ')[1];
-      
-      // Decodificar o token JWT para obter o ID do usuário
-      const decodedToken = jwt.verify(token, process.env.TOKEN);
-      const usuarioId = decodedToken.userId; // Supondo que o ID do usuário está armazenado em userId no token
-  
-      // ID do pedido a ser excluído
-      const pedidoId = req.params.id;
-  
-      // Verificar se o pedido pertence ao usuário autenticado
-      const pedido = await Pedido.findOne({
-        where: {
-          id: pedidoId,
-          user_id: usuarioId
+        if (usuario || gestor) {
+            // Gerar token com tempo de expiração de 15 minutos
+            const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '15m' });
+
+            // Definir a data de expiração do token
+            const resetTokenExpiresAt = moment().add(15, 'minutes').toDate();
+
+            // Construir o URL para a página de redefinição de senha com o token
+            const resetPasswordLink = `https://espacomaker.vercel.app/redefinir%20senha?token=${token}`;
+
+            const resetPasswordEmailContent = {
+                from: SENDER_EMAIL,
+                to: email,
+                subject: "Recuperação de senha",
+                text: `Olá,\n\nVocê solicitou uma redefinição de senha. Por favor, clique no seguinte link para redefinir sua senha: ${resetPasswordLink}`,
+                html: `<p>Olá,<br/><br/>Você solicitou uma redefinição de senha. Por favor, clique no seguinte link para redefinir sua senha: <a href="${resetPasswordLink}">${resetPasswordLink}</a></p>`
+            };
+
+            const response = await nodemailerTransporter.sendMail(resetPasswordEmailContent);
+            console.log("E-mail enviado com sucesso:", response);
+            res.send("E-mail de recuperação de senha enviado com sucesso.");
+        } else {
+            res.status(404).send("E-mail não encontrado.");
         }
-      });
-  
-      // Se o pedido existe e pertence ao usuário autenticado, exclua-o
-      if (pedido) {
-        await pedido.destroy();
-        res.status(200).json({ message: 'Pedido excluído com sucesso.' });
-      } else {
-        res.status(404).json({ message: 'Pedido não encontrado ou não pertence ao usuário.' });
-      }
     } catch (error) {
-      res.status(500).json({ message: 'Erro ao excluir o pedido', error: error.message });
+        console.error("Erro ao verificar e-mail:", error);
+        res.status(500).send("Ocorreu um erro ao verificar o e-mail de recuperação de senha.");
     }
-  }
+}
 
-  async function listarTodosOsPedidos(req, res) {
+async function redefinirSenha(req, res) {
+    const token = req.headers.authorization.replace("Bearer ", "");
+    const novaSenha = req.body.novaSenha;
+
     try {
-      // Consultar todos os pedidos
-      const pedidos = await Pedido.findAll();
-  
-      res.status(200).json(pedidos);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao listar todos os pedidos', error: error.message });
-    }
-  }
-module.exports = {
-    criarPedido,
-    listarPedidos,
-    excluirPedido,
-    excluirMeuPedido,
-    listarTodosOsPedidos
-};
+        // Verificar se o token é válido
+        const decoded = jwt.verify(token, JWT_SECRET);
+        
+        // Verificar se o usuário é um usuário comum
+        let usuario = await Usuario.findOne({ email: decoded.email });
 
+        if (!usuario) {
+            // Se não for um usuário comum, verificar se é um gestor
+            usuario = await Gestor.findOne({ email: decoded.email });
+        }
+
+        if (usuario) {
+            // Atualizar a senha do usuário na tabela apropriada
+            if (usuario instanceof Usuario) {
+                await await Usuario.update({ senha: novaSenha }, { where: { email: decoded.email } });
+            } else if (usuario instanceof Gestor) {
+                await await Gestor.update({ senha: novaSenha }, { where: { email: decoded.email } });
+            }
+
+            // Enviar resposta de sucesso
+            res.send("Senha redefinida com sucesso.");
+        } else {
+            // Se nenhum usuário for encontrado, enviar uma resposta de erro
+            res.status(404).send("Usuário não encontrado.");
+        }
+    } catch (error) {
+        console.error("Erro ao redefinir senha:", error);
+        res.status(500).send("Ocorreu um erro ao redefinir a senha.");
+    }
+}
+
+module.exports = {
+    enviarEmailRecuperacaoSenha, // Certifique-se de exportar a função corretamente
+    redefinirSenha
+};
