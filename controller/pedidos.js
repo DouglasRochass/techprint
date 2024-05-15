@@ -17,11 +17,10 @@ async function enviarEmailComAnexo(destinatarios, assunto, corpo, anexo) {
         to: destinatario,
         subject: assunto,
         text: corpo,
-        attachments: [
+         attachments: [
           {
             filename: anexo ? anexo.originalname : '', // Use o nome original do arquivo, se disponível
             content: anexo ? anexo.buffer : '', // Use o conteúdo do buffer do arquivo, se disponível
-            encoding: anexo ? 'base64' : '' // Codifique o conteúdo em base64, se disponível
           }
         ]
       };
