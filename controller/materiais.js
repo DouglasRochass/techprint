@@ -5,6 +5,11 @@ exports.criarMaterial = async (req, res) => {
   try {
     const { cor, quantidade, diametro, material, peso } = req.body;
 
+    // Verificar se algum dos campos está vazio
+    if (!cor || !quantidade || !diametro || !material || !peso) {
+      return res.status(400).json({ error: "Todos os campos são obrigatórios" });
+    }
+
     const novoMaterial = await Material.create({ cor, quantidade, diametro, material, peso });
 
     res.status(201).json({ newMaterial: novoMaterial.id, message: "Material cadastrado com sucesso" });

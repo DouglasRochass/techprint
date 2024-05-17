@@ -5,7 +5,12 @@ const Gestor = require('../models/gestor');
 exports.criarGestor = async (req, res) => {
   try {
     const { nome, email, senha } = req.body;
-    
+
+    // Verificar se algum dos campos está vazio
+    if (!nome || !email || !senha) {
+      return res.status(400).json({ error: "Todos os campos são obrigatórios" });
+    }
+
     // Verificar se o email já está cadastrado como usuário
     const emailExistenteUsuario = await Usuario.findOne({ where: { email: email } });
     if (emailExistenteUsuario) {
@@ -36,7 +41,12 @@ exports.criarGestor = async (req, res) => {
 exports.criarUsuario = async (req, res) => {
   try {
     const { nome, email, senha, cargo, turma } = req.body;
-    
+
+    // Verificar se algum dos campos está vazio
+    if (!nome || !email || !senha || !cargo) {
+      return res.status(400).json({ error: "Todos os campos são obrigatórios" });
+    }
+
     // Verificar se o email já está cadastrado como gestor
     const emailExistenteGestor = await Gestor.findOne({ where: { email: email } });
     if (emailExistenteGestor) {

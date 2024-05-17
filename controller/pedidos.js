@@ -37,6 +37,13 @@ async function enviarEmailComAnexo(destinatarios, assunto, corpo, anexo) {
 
 async function criarPedido(req, res) {
   try {
+    const { nome_pedido, data, descri, tempo_impre } = req.body;
+    
+    // Verificar se algum dos campos está vazio
+    if (!nome_pedido || !data || !descri || !tempo_impre) {
+      return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
+    }
+
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.verify(token, process.env.TOKEN);
     const usuarioId = decodedToken.userId;
@@ -55,19 +62,19 @@ async function criarPedido(req, res) {
 
       // Montar o corpo do e-mail
       const corpoEmail = `${nome} fez um agendamento.\n\n` +
-                         `Nome do pedido: ${req.body.nome_pedido}\n` +
-                         `Data: ${req.body.data}\n` +
-                         `Descrição: ${req.body.descri}\n` +
+                         `Nome do pedido: ${nome_pedido}\n` +
+                         `Data: ${data}\n` +
+                         `Descrição: ${descri}\n` +
                          `Arquivo do pedido: ${req.file.originalname}`;
 
       // Enviar o e-mail para todos os gestores
       await enviarEmailComAnexo(destinatarios, 'Novo Agendamento', corpoEmail);
 
       const novoPedido = await Pedido.create({
-        nome_pedido: req.body.nome_pedido,
-        data: req.body.data,
-        descri: req.body.descri,
-        tempo_impre: req.body.tempo_impre,
+        nome_pedido,
+        data,
+        descri,
+        tempo_impre,
         user_id: usuarioId
       });
       res.status(200).json({ message: 'E-mails enviados com sucesso para todos os gestores.' });
@@ -76,6 +83,7 @@ async function criarPedido(req, res) {
     res.status(500).json({ message: 'Erro ao criar o pedido', error: error.message });
   }
 }
+
 async function listarPedidos(req, res) {
     try {
         // Extrair o token JWT do cabeçalho da solicitação
