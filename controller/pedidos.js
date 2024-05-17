@@ -48,12 +48,7 @@ async function criarPedido(req, res) {
     const decodedToken = jwt.verify(token, process.env.TOKEN);
     const usuarioId = decodedToken.userId;
     
-    // Verificar se o usuário existe
-    const usuario = await Usuario.findByPk(usuarioId);
-    if (!usuario) {
-      return res.status(404).json({ message: 'Usuário não encontrado' });
-    }
-
+  
     // Verificar se um arquivo foi enviado
     if (!req.file) {
       return res.status(400).json({ message: 'O arquivo do pedido é obrigatório' });
@@ -66,7 +61,7 @@ async function criarPedido(req, res) {
     const destinatarios = gestores.map(gestor => gestor.email);
 
     // Montar o corpo do e-mail
-    const corpoEmail = `${nome} fez um agendamento.\n\n` +
+    const corpoEmail = `Chegou um novo agendamento.\n\n` +
                        `Nome do pedido: ${nome_pedido}\n` +
                        `Data: ${data}\n` +
                        `Descrição: ${descri}\n` +
