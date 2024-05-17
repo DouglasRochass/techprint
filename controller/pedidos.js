@@ -47,38 +47,42 @@ async function criarPedido(req, res) {
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.verify(token, process.env.TOKEN);
     const usuarioId = decodedToken.userId;
-    const usuario = await Usuario.findByPk(usuarioId);
-    const nome = usuario.nome;
     
-    // Processar o envio de arquivos em memória
-    upload.single('arquivo')(req, res, async function (err) {
-      if (err) {
-        return res.status(400).json({ message: 'Erro ao enviar o arquivo', error: err.message });
-      }
+    // Verificar se o usuário existe
+    const usuario = await Usuario.findByPk(usuarioId);
+    if (!usuario) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
 
-      // Recuperar todos os e-mails dos gestores
-      const gestores = await Gestor.findAll();
-      const destinatarios = gestores.map(gestor => gestor.email);
+    // Verificar se um arquivo foi enviado
+    if (!req.file) {
+      return res.status(400).json({ message: 'O arquivo do pedido é obrigatório' });
+    }
+    
+    const nome = usuario.nome;
 
-      // Montar o corpo do e-mail
-      const corpoEmail = `${nome} fez um agendamento.\n\n` +
-                         `Nome do pedido: ${nome_pedido}\n` +
-                         `Data: ${data}\n` +
-                         `Descrição: ${descri}\n` +
-                         `Arquivo do pedido: ${req.file.originalname}`;
+    // Recuperar todos os e-mails dos gestores
+    const gestores = await Gestor.findAll();
+    const destinatarios = gestores.map(gestor => gestor.email);
 
-      // Enviar o e-mail para todos os gestores
-      await enviarEmailComAnexo(destinatarios, 'Novo Agendamento', corpoEmail);
+    // Montar o corpo do e-mail
+    const corpoEmail = `${nome} fez um agendamento.\n\n` +
+                       `Nome do pedido: ${nome_pedido}\n` +
+                       `Data: ${data}\n` +
+                       `Descrição: ${descri}\n` +
+                       `Arquivo do pedido: ${req.file.originalname}`;
 
-      const novoPedido = await Pedido.create({
-        nome_pedido,
-        data,
-        descri,
-        tempo_impre,
-        user_id: usuarioId
-      });
-      res.status(200).json({ message: 'E-mails enviados com sucesso para todos os gestores.' });
+    // Enviar o e-mail para todos os gestores
+    await enviarEmailComAnexo(destinatarios, 'Novo Agendamento', corpoEmail, req.file);
+
+    const novoPedido = await Pedido.create({
+      nome_pedido,
+      data,
+      descri,
+      tempo_impre,
+      user_id: usuarioId
     });
+    res.status(200).json({ message: 'E-mails enviados com sucesso para todos os gestores.' });
   } catch (error) {
     res.status(500).json({ message: 'Erro ao criar o pedido', error: error.message });
   }
