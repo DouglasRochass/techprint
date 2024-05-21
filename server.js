@@ -8,12 +8,19 @@ const materiais = require('./routers/material')
 const usuarios = require('./routers/usuarios')
 const maquina = require('./routers/maquina')
 const pedidos = require('./routers/pedidos')
+const bodyParser = require('body-parser')
+
 
 const  app = express()
 
 
 app.use(cors());
-app.use(express.json());
+
+
+app.use(bodyParser.json());
+
+
+app.use(bodyParser.urlencoded({ extended: true }));
 
 
 app.use('/login', login)
