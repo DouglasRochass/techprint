@@ -103,9 +103,10 @@ async function criarPedido(req, res) {
 
     // Montar o corpo do e-mail
     const corpoEmail = ` fez um agendamento.\n\n` +
-                       `Nome do pedido: ${req.body.nome_pedido}\n` +
-                       `Data: ${req.body.data}\n` +
-                       `Descrição: ${req.body.descri}\n`;
+                           `Nome do pedido: ${req.body.nome_pedido}\n` +
+                          `Data: ${req.body.data}\n` +
+                          `Descrição: ${req.body.descri}\n` +
+          `Arquivo do pedido: ${req.file.originalname}`;
 
     // Enviar o e-mail para todos os gestores
     await enviarEmailComAnexo(destinatarios, 'Novo Agendamento', corpoEmail, null);
