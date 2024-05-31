@@ -36,7 +36,11 @@ async function enviarEmailComAnexo(destinatarios, assunto, corpo, anexo) {
 
 async function criarPedido(req, res) {
   try {
-    const token = req.headers.authorization.split(' ')[1];
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return res.status(401).json({ message: 'Token de autenticação não fornecido' });
+    }
+
     const decodedToken = jwt.verify(token, process.env.TOKEN);
     const usuarioId = decodedToken.userId;
     const usuario = await Usuario.findByPk(usuarioId);
