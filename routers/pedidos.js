@@ -5,7 +5,7 @@ const pedidosControllers = require('../controller/pedidos');
 
 router.post('/pedidos', pedidosControllers.criarPedido);
 router.get('/meus-pedidos', pedidosControllers.listarPedidos);
-router.get('/pedidos', authgestor, pedidosControllers.listarTodosOsPedidos);
+router.get('/pedidos', pedidosControllers.listarTodosOsPedidos);
 router.delete('/pedidos/:id', authgestor, pedidosControllers.excluirPedido);
 router.delete('/meus-pedidos/:id', pedidosControllers.excluirMeuPedido);
 
