@@ -102,7 +102,7 @@ async function criarPedido(req, res) {
     const destinatarios = gestores.map(gestor => gestor.email);
 
     // Montar o corpo do e-mail
-    const corpoEmail = `${usuario.email} fez um agendamento.\n\n` +
+    const corpoEmail = ` fez um agendamento.\n\n` +
                        `Nome do pedido: ${req.body.nome_pedido}\n` +
                        `Data: ${req.body.data}\n` +
                        `Descrição: ${req.body.descri}\n`;
