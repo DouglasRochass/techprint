@@ -35,8 +35,7 @@ async function enviarEmailComAnexo(destinatarios, assunto, corpo, anexo) {
 }
 
 async function criarPedido(req, res) {
-
-
+  try {
     // Extrair o token do cabeçalho de autorização
     const token = req.headers.authorization.split(' ')[1];
 
@@ -44,46 +43,51 @@ async function criarPedido(req, res) {
     const usuarioId = decodedToken.userId;
     const usuario = await Usuario.findByPk(usuarioId);
     
-    
-    // Processar o envio de arquivos em memória
+    // Processar o envio de arquivos em memória dentro do bloco try
     upload.single('arquivo')(req, res, async function (err) {
-      if (err) {
-        return res.status(400).json({ message: 'Erro ao enviar o arquivo', error: err.message });
+      try {
+        if (err) {
+          return res.status(400).json({ message: 'Erro ao enviar o arquivo', error: err.message });
+        }
+
+        if (!req.file) {
+          return res.status(400).json({ message: 'Arquivo não enviado.' });
+        }
+
+        // Recuperar todos os e-mails dos gestores
+        const gestores = await Gestor.findAll();
+        const destinatarios = gestores.map(gestor => gestor.email);
+
+        // Montar o corpo do e-mail
+        const corpoEmail = ` fez um agendamento.\n\n` +
+                           `Nome do pedido: ${req.body.nome_pedido}\n` +
+                           `Data: ${req.body.data}\n` +
+                           `Descrição: ${req.body.descri}\n` +
+                           `Arquivo do pedido: ${req.file.originalname}`;
+
+        // Enviar o e-mail para todos os gestores com o anexo
+        await enviarEmailComAnexo(destinatarios, 'Novo Agendamento', corpoEmail, req.file);
+
+        const novoPedido = await Pedido.create({
+          nome_pedido: req.body.nome_pedido,
+          data: req.body.data,
+          descri: req.body.descri,
+          tempo_impre: req.body.tempo_impre,
+          user_id: usuarioId
+        });
+        res.status(200).json({ message: 'E-mails enviados com sucesso para todos os gestores.' });
+      } catch (error) {
+        // Captura de erro dentro do upload.single
+        console.error('Erro ao criar o pedido:', error);
+        res.status(500).json({ message: 'Erro ao criar o pedido', error: error.message });
       }
-
-      if (!req.file) {
-        return res.status(400).json({ message: 'Arquivo não enviado.' });
-      }
-      
-
-      // Recuperar todos os e-mails dos gestores
-      const gestores = await Gestor.findAll();
-      const destinatarios = gestores.map(gestor => gestor.email);
-
-      // Montar o corpo do e-mail
-      const corpoEmail = ` fez um agendamento.\n\n` +
-                         `Nome do pedido: ${req.body.nome_pedido}\n` +
-                         `Data: ${req.body.data}\n` +
-                         `Descrição: ${req.body.descri}\n` +
-                         `Arquivo do pedido: ${req.file.originalname}`;
-
-      // Enviar o e-mail para todos os gestores com o anexo
-      await enviarEmailComAnexo(destinatarios, 'Novo Agendamento', corpoEmail, req.file);
-
-      const novoPedido = await Pedido.create({
-        nome_pedido: req.body.nome_pedido,
-        data: req.body.data,
-        descri: req.body.descri,
-        tempo_impre: req.body.tempo_impre,
-        user_id: usuarioId
-      });
-      res.status(200).json({ message: 'E-mails enviados com sucesso para todos os gestores.' });
     });
   } catch (error) {
+    // Captura de erro fora do upload.single
+    console.error('Erro ao criar o pedido:', error);
     res.status(500).json({ message: 'Erro ao criar o pedido', error: error.message });
   }
 }
-
 
 async function listarPedidos(req, res) {
   try {
