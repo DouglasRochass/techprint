@@ -162,13 +162,24 @@ async function listarTodosOsPedidos(req, res) {
       include: Usuario // Inclui informações do usuário associado a cada pedido
     });
 
-    res.status(200).json(todosOsPedidos);
+    // Mapear os pedidos para incluir apenas o nome do usuário associado
+    const pedidosComNomeUsuario = todosOsPedidos.map(pedido => {
+      return {
+        id: pedido.id,
+        nome_pedido: pedido.nome_pedido,
+        data: pedido.data,
+        descri: pedido.descri,
+        tempo_impre: pedido.tempo_impre,
+        nome_usuario: pedido.Usuario.nome // Acessa o nome do usuário associado ao pedido
+      };
+    });
+
+    res.status(200).json(pedidosComNomeUsuario);
   } catch (error) {
     console.error('Erro ao listar todos os pedidos:', error);
     res.status(500).json({ message: 'Erro ao listar todos os pedidos', error: error.message });
   }
 }
-
 
 
 module.exports = {
