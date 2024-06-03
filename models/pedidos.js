@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db/conexao');
-const Usuario = require('./usuarios');
+const usuario = require('./usuarios');
 
 
 const pedidos = sequelize.define('pedidos', {
@@ -29,6 +29,8 @@ const pedidos = sequelize.define('pedidos', {
   freezeTableName: true
 });
 
-pedidos.belongsTo(Usuario)
+pedidos.belongsTo(usuario)
 pedidos.sync();
+
+
 module.exports = pedidos;
