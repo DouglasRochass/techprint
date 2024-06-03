@@ -165,10 +165,10 @@ async function listarTodosOsPedidos(req, res) {
 
     // Buscar todos os pedidos e incluir informações sobre quem fez cada pedido
     const todosOsPedidos = await Pedido.findAll({
-      include: {
+      include: [{
         model: Usuario,
         attributes: ['nome'] // Atributos que você deseja incluir do modelo de usuário
-      }
+      }]
     });
 
     res.status(200).json(todosOsPedidos);
@@ -176,6 +176,7 @@ async function listarTodosOsPedidos(req, res) {
     res.status(500).json({ message: 'Erro ao listar todos os pedidos', error: error.message });
   }
 }
+
 
 
 module.exports = {
