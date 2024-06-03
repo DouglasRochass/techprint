@@ -155,16 +155,12 @@ async function excluirMeuPedido(req, res) {
 
 async function listarTodosOsPedidos(req, res) {
   try {
-    // Verificar o token de autorização
-    const token = req.headers.authorization.split(' ')[1];
-    const decodedToken = jwt.verify(token, process.env.TOKEN);
-    const usuarioId = decodedToken.userId;
-
     // Consultar todos os pedidos, incluindo o nome de cada usuário que fez o pedido
     const pedidos = await Pedido.findAll({
       include: {
         model: Usuario,
-        attributes: ['nome'] // Atributos que você deseja incluir do modelo de usuário
+        attributes: ['nome'], // Atributos que você deseja incluir do modelo de usuário
+        where: { id: Sequelize.col('Pedido.user_id') } // Condição de junção
       }
     });
 
@@ -173,6 +169,8 @@ async function listarTodosOsPedidos(req, res) {
     res.status(500).json({ message: 'Erro ao listar todos os pedidos', error: error.message });
   }
 }
+
+
 module.exports = {
     criarPedido,
     listarPedidos,
