@@ -158,19 +158,20 @@ async function excluirMeuPedido(req, res) {
 async function listarTodosOsPedidos(req, res) {
   try {
     // Consultar todos os pedidos e incluir informações sobre o usuário associado a cada pedido
-    const todosOsPedidos = await Pedido.findAll({
+    const todosOsPedidos = await Pedidos.findAll({
       include: Usuario // Inclui informações do usuário associado a cada pedido
     });
 
-    // Mapear os pedidos para incluir apenas o nome do usuário associado
+    // Mapear os pedidos para incluir o nome do usuário associado (se existir)
     const pedidosComNomeUsuario = todosOsPedidos.map(pedido => {
+      const nomeUsuario = (pedido.Usuario && pedido.Usuario.nome) ? pedido.Usuario.nome : 'Usuário não encontrado';
       return {
         id: pedido.id,
         nome_pedido: pedido.nome_pedido,
         data: pedido.data,
         descri: pedido.descri,
         tempo_impre: pedido.tempo_impre,
-        nome_usuario: pedido.Usuario.nome // Acessa o nome do usuário associado ao pedido
+        nome_usuario: nomeUsuario
       };
     });
 
