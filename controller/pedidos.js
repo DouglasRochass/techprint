@@ -156,12 +156,19 @@ async function excluirMeuPedido(req, res) {
 
 async function listarTodosOsPedidos(req, res) {
   try {
+    // Verificar o token de autorização
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, process.env.TOKEN);
+    const usuarioId = decodedToken.userId;
+
     // Consultar todos os pedidos, incluindo o nome de cada usuário que fez o pedido
     const pedidos = await Pedido.findAll({
+      where: {
+        user_id: usuarioId
+      },
       include: {
         model: Usuario,
-        attributes: ['nome'], // Atributos que você deseja incluir do modelo de usuário
-        where: { id: Sequelize.col('Pedido.user_id') } // Condição de junção
+        attributes: ['nome'] // Atributos que você deseja incluir do modelo de usuário
       }
     });
 
