@@ -22,12 +22,7 @@ const pedidos = sequelize.define('pedidos', {
   },
  user_id: { 
     type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: Usuario, // Referência ao modelo Usuario
-      key: 'id'       // Chave primária do modelo Usuario
-    }
-  }
+    allowNull: false
 }, {
   timestamps: false,
   freezeTableName: true
@@ -35,5 +30,6 @@ const pedidos = sequelize.define('pedidos', {
 
 pedidos.sync();
 
+pedidos.belongsTo(Usuario, { foreignKey: 'user_id' });
 
 module.exports = pedidos; 
