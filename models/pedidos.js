@@ -29,6 +29,6 @@ const pedidos = sequelize.define('pedidos', {
   freezeTableName: true
 });
 
-Pedido.belongsTo(Usuario)
+pedidos.belongsTo(Usuario)
 pedidos.sync();
 module.exports = pedidos;
