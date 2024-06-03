@@ -158,7 +158,7 @@ async function excluirMeuPedido(req, res) {
 async function listarTodosOsPedidos(req, res) {
   try {
     // Consultar todos os pedidos e incluir informações sobre o usuário associado a cada pedido
-    const todosOsPedidos = await Pedidos.findAll({
+    const todosOsPedidos = await Pedido.findAll({
       include: Usuario // Inclui informações do usuário associado a cada pedido
     });
 
