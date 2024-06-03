@@ -154,29 +154,28 @@ async function excluirMeuPedido(req, res) {
     }
   }
 
-async function listarTodosOsPedidos(req, res) {
-  try {
-    // Verificar o token de autorização
-    const token = req.headers.authorization.split(' ')[1];
-    const decodedToken = jwt.verify(token, process.env.TOKEN);
-    const usuarioId = decodedToken.userId;
-
-    // Consultar todos os pedidos, incluindo o nome de cada usuário que fez o pedido
-    const pedidos = await Pedido.findAll({
-      where: {
-        user_id: usuarioId
-      },
-      include: {
-        model: Usuario,
-        attributes: ['nome'] // Atributos que você deseja incluir do modelo de usuário
+async function listarPedidos(req, res) {
+    try {
+        // Extrair o token JWT do cabeçalho da solicitação
+        const token = req.headers.authorization.split(' ')[1];
+        
+        // Decodificar o token JWT para obter o ID do usuário
+        const decodedToken = jwt.verify(token, process.env.TOKEN);
+        const usuarioId = decodedToken.userId; // Supondo que o ID do usuário está armazenado em userId no token
+    
+        // Buscar os pedidos associados ao ID do usuário
+        const pedidosDoUsuario = await Pedido.findAll({
+          where: {
+            user_id: usuarioId
+          }
+        });
+    
+        res.status(200).json(pedidosDoUsuario);
+      } catch (error) {
+        res.status(500).json({ message: 'Erro ao listar os pedidos do usuário', error: error.message });
       }
-    });
+    }
 
-    res.status(200).json(pedidos);
-  } catch (error) {
-    res.status(500).json({ message: 'Erro ao listar todos os pedidos', error: error.message });
-  }
-}
 
 
 module.exports = {
