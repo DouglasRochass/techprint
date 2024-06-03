@@ -88,6 +88,28 @@ async function enviarEmailComAnexo(destinatarios, assunto, corpo, anexo) {
    }
  }
 
+async function listarPedidos(req, res) {
+    try {
+        // Extrair o token JWT do cabeçalho da solicitação
+        const token = req.headers.authorization.split(' ')[1];
+        
+        // Decodificar o token JWT para obter o ID do usuário
+        const decodedToken = jwt.verify(token, process.env.TOKEN);
+        const usuarioId = decodedToken.userId; // Supondo que o ID do usuário está armazenado em userId no token
+    
+        // Buscar os pedidos associados ao ID do usuário
+        const pedidosDoUsuario = await Pedido.findAll({
+          where: {
+            user_id: usuarioId
+          }
+        });
+    
+        res.status(200).json(pedidosDoUsuario);
+      } catch (error) {
+        res.status(500).json({ message: 'Erro ao listar os pedidos do usuário', error: error.message });
+      }
+    }
+
 
 async function excluirPedido(req, res) {
   try {
