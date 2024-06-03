@@ -153,22 +153,26 @@ async function excluirMeuPedido(req, res) {
     }
   }
 
-  async function listarTodosOsPedidos(req, res) {
-    try {
-      const token = req.headers.authorization.split(' ')[1];
-      const decodedToken = jwt.verify(token, process.env.TOKEN);
-      const usuarioId = decodedToken.userId;
-      const usuario = await Usuario.findByPk(usuarioId);
+async function listarTodosOsPedidos(req, res) {
+  try {
+    // Verificar o token de autorização
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, process.env.TOKEN);
+    const usuarioId = decodedToken.userId;
 
-      const nome = usuario.nome;
-      // Consultar todos os pedidos
-      const pedidos = await Pedido.findAll();
-  
-      res.status(200).json(pedidos);
-    } catch (error) {
-      res.status(500).json({ message: 'Erro ao listar todos os pedidos', error: error.message });
-    }
+    // Consultar todos os pedidos, incluindo o nome de cada usuário que fez o pedido
+    const pedidos = await Pedido.findAll({
+      include: {
+        model: Usuario,
+        attributes: ['nome'] // Atributos que você deseja incluir do modelo de usuário
+      }
+    });
+
+    res.status(200).json(pedidos);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao listar todos os pedidos', error: error.message });
   }
+}
 module.exports = {
     criarPedido,
     listarPedidos,
