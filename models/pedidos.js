@@ -23,6 +23,7 @@ const pedidos = sequelize.define('pedidos', {
  user_id: { 
     type: DataTypes.INTEGER,
     allowNull: false
+ }
 }, {
   timestamps: false,
   freezeTableName: true
