@@ -155,6 +155,12 @@ async function excluirMeuPedido(req, res) {
 
   async function listarTodosOsPedidos(req, res) {
     try {
+      const token = req.headers.authorization.split(' ')[1];
+      const decodedToken = jwt.verify(token, process.env.TOKEN);
+      const usuarioId = decodedToken.userId;
+      const usuario = await Usuario.findByPk(usuarioId);
+
+      const nome = usuario.nome;
       // Consultar todos os pedidos
       const pedidos = await Pedido.findAll();
   
