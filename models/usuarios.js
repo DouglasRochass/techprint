@@ -30,7 +30,7 @@ const usuario = sequelize.define('Usuario', {
   freezeTableName: true
 });
 
-usuario.hasMany(Pedido)
+usuario.hasMany(pedidos)
 usuario.sync();
 
 module.exports = usuario;
