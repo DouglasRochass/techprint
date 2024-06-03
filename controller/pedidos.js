@@ -1,5 +1,6 @@
 const Pedido = require('../models/pedidos');
 const jwt = require('jsonwebtoken');
+const { Sequelize } = require('sequelize');
 const nodemailerTransporter = require('../config/mailerconfig');
 const multer = require('multer');
 const Gestor = require('../models/gestor');
