@@ -20,9 +20,13 @@ const pedidos = sequelize.define('pedidos', {
     type: DataTypes.STRING,
     allowNull: false
   },
-  user_id: { // Novo campo para armazenar o ID do usuário
+ user_id: { 
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: Usuario, // Referência ao modelo Usuario
+      key: 'id'       // Chave primária do modelo Usuario
+    }
   }
 }, {
   timestamps: false,
