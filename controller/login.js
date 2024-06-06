@@ -13,6 +13,7 @@ exports.login = async (req, res) => {
     user = await Usuario.findOne({
       where: {
         email: email,
+        isGestor: false
       },
     });
 
@@ -21,6 +22,7 @@ exports.login = async (req, res) => {
       user = await Gestor.findOne({
         where: {
           email: email,
+          isGestor: true
         },
       });
     }
