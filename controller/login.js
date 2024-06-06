@@ -8,24 +8,27 @@ exports.login = async (req, res) => {
     const { email, senha } = req.body; // Adicione "token" ao destructuring
 
     let user;
-
+    let isGestor = false
     // Verifique se o usuário existe na tabela de usuários
     user = await Usuario.findOne({
       where: {
         email: email,
       },
-      isGestor: false
+     
     });
 
     // Se o usuário não foi encontrado na tabela de usuários, verifique na tabela de gestores
     if (!user) {
       user = await Gestor.findOne({
         where: {
-          email: email,
-          
-        },
-        isGestor: true
+          email: email
+        }
       });
+
+     
+      if (user) {
+        isGestor = true;
+      }
     }
 
     // Se nenhum usuário foi encontrado, retorne uma resposta de erro
